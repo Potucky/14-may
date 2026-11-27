@@ -1,0 +1,239 @@
+# Clean Harbor & Pine staging contract.
+# shop_defects is exercised by tests/test_defect_detection.py, not this file.
+schema: shop
+
+expectations:
+  - name: customers.email_not_null
+    type: not_null
+    table: customers
+    column: email
+  - name: customers.full_name_not_null
+    type: not_null
+    table: customers
+    column: full_name
+  - name: customers.region_not_null
+    type: not_null
+    table: customers
+    column: region_code
+  - name: customers.status_not_null
+    type: not_null
+    table: customers
+    column: status
+  - name: customers.created_at_not_null
+    type: not_null
+    table: customers
+    column: created_at
+  - name: customers.updated_at_not_null
+    type: not_null
+    table: customers
+    column: updated_at
+  - name: products.sku_not_null
+    type: not_null
+    table: products
+    column: sku
+  - name: products.name_not_null
+    type: not_null
+    table: products
+    column: product_name
+  - name: products.category_not_null
+    type: not_null
+    table: products
+    column: category
+  - name: products.price_not_null
+    type: not_null
+    table: products
+    column: unit_price
+  - name: orders.order_number_not_null
+    type: not_null
+    table: orders
+    column: order_number
+  - name: orders.customer_id_not_null
+    type: not_null
+    table: orders
+    column: customer_id
+  - name: orders.status_not_null
+    type: not_null
+    table: orders
+    column: status
+  - name: orders.ordered_at_not_null
+    type: not_null
+    table: orders
+    column: ordered_at
+  - name: orders.subtotal_not_null
+    type: not_null
+    table: orders
+    column: subtotal
+  - name: order_items.order_id_not_null
+    type: not_null
+    table: order_items
+    column: order_id
+  - name: order_items.product_id_not_null
+    type: not_null
+    table: order_items
+    column: product_id
+  - name: order_items.quantity_not_null
+    type: not_null
+    table: order_items
+    column: quantity
+  - name: order_items.unit_price_not_null
+    type: not_null
+    table: order_items
+    column: unit_price
+  - name: order_items.line_total_not_null
+    type: not_null
+    table: order_items
+    column: line_total
+
+  - name: customers.email_not_blank
+    type: not_blank
+    table: customers
+    column: email
+  - name: customers.full_name_not_blank
+    type: not_blank
+    table: customers
+    column: full_name
+  - name: products.sku_not_blank
+    type: not_blank
+    table: products
+    column: sku
+  - name: products.name_not_blank
+    type: not_blank
+    table: products
+    column: product_name
+  - name: orders.order_number_not_blank
+    type: not_blank
+    table: orders
+    column: order_number
+
+  - name: customers.email_unique
+    type: unique
+    table: customers
+    column: email
+  - name: products.sku_unique
+    type: unique
+    table: products
+    column: sku
+  - name: orders.order_number_unique
+    type: unique
+    table: orders
+    column: order_number
+
+  - name: products.unit_price_between
+    type: between
+    table: products
+    column: unit_price
+    min: "1.00"
+    max: "500.00"
+  - name: orders.subtotal_between
+    type: between
+    table: orders
+    column: subtotal
+    min: "0.00"
+    max: "2000.00"
+  - name: order_items.quantity_between
+    type: between
+    table: order_items
+    column: quantity
+    min: "1"
+    max: "20"
+  - name: order_items.unit_price_between
+    type: between
+    table: order_items
+    column: unit_price
+    min: "1.00"
+    max: "500.00"
+
+  - name: customers.region_accepted
+    type: in_set
+    table: customers
+    column: region_code
+    values: [NE, SE, MW, SW, W]
+  - name: customers.status_accepted
+    type: in_set
+    table: customers
+    column: status
+    values: [active, paused, closed]
+  - name: products.category_accepted
+    type: in_set
+    table: products
+    column: category
+    values: [shelter, packs, apparel, camp]
+  - name: orders.status_accepted
+    type: in_set
+    table: orders
+    column: status
+    values: [placed, paid, packed, shipped, delivered, cancelled]
+
+  - name: orders.customer_exists
+    type: foreign_key
+    table: orders
+    column: customer_id
+    ref_table: customers
+    ref_column: customer_id
+  - name: order_items.order_exists
+    type: foreign_key
+    table: order_items
+    column: order_id
+    ref_table: orders
+    ref_column: order_id
+  - name: order_items.product_exists
+    type: foreign_key
+    table: order_items
+    column: product_id
+    ref_table: products
+    ref_column: product_id
+
+  - name: customers.row_count
+    type: row_count
+    table: customers
+    min: 24
+    max: 24
+  - name: products.row_count
+    type: row_count
+    table: products
+    min: 12
+    max: 12
+  - name: orders.row_count
+    type: row_count
+    table: orders
+    min: 36
+    max: 36
+  - name: order_items.row_count
+    type: row_count
+    table: order_items
+    min: 72
+    max: 72
+
+  - name: orders.freshness
+    type: max_age
+    table: orders
+    column: ordered_at
+    max_age_hours: 48
+  - name: orders.ordered_at_not_future
+    type: not_future
+    table: orders
+    column: ordered_at
+  - name: orders.shipped_at_on_or_after_ordered_at
+    type: column_gte_when_present
+    table: orders
+    column: shipped_at
+    other_column: ordered_at
+  - name: customers.updated_at_on_or_after_created_at
+    type: column_gte_when_present
+    table: customers
+    column: updated_at
+    other_column: created_at
+
+  - name: orders.subtotal_matches_line_items
+    type: parent_sum_matches
+    parent_table: orders
+    parent_key: order_id
+    parent_amount: subtotal
+    child_table: order_items
+    child_key: order_id
+    child_amount: line_total
+  - name: order_items.line_total_matches_quantity_times_price
+    type: product_equals
+    table: order_items
+    column: line_total
+    factors: [quantity, unit_price]
